@@ -107,7 +107,13 @@ def showshells(db):
 
 @app.get("/")
 def home():
-    return "hello"
+    return bottle.static_file('index.html',root='./')
+
+@app.get("/static/<path>/<filename>")
+def static(path, filename):
+    pathroot = './static/%s/' % path
+    return  bottle.static_file(filename, root=pathroot)
+
 
 
 app.run(host="0.0.0.0",port=8080,debug=True)

@@ -30,31 +30,31 @@ body,html {
     letter-spacing: -0.02em;
 }
 
-.content {
+.container {
     max-width: 100%;
     margin: 0 auto;
     padding: 1em;
-    text-align: center;
+
     max-height: 70%;
 }
 
-.content .shell-list {
+.container .shell-list {
     overflow: auto;
 }
 
-.content .shell-list .shell-list-header {
+.container .shell-list .shell-list-header {
     font-size: 100%;
     font-weight: 100;
     line-height: 2.0;
     background: #c0c0c0;
 }
 
-.content .shell-info {
+.container .shell-info {
     overflow-y: auto;
     text-align: left;
 }
 
-.content .shell-info .shell-info-tab {
+.container .shell-info .shell-info-tab {
     font-size: 100%;
     font-weight: 100;
     line-height: 2.0;

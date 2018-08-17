@@ -5,11 +5,22 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>WShellV</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" media="screen" href="static/css/main.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="/static/css/main.css" />
     <!--
-    <script src="main.js"></script>    
+    <script src="main.js"></script>
     -->
-    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
+
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- jquery.js -->
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <!--vue.js-->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 </head>
 <body>
     <div class="header">
@@ -17,31 +28,72 @@
         <h2>可扩展的webshell管理工具</h2>
     </div>
 
-    <div class="content pure-g">
-        <div class="shell-list pure-u-1-4">
-            <div class="shell-list-header">
-                webshell列表
-            </div>
-            <div class="shell-list-single pure-g">
-                <a class="pure-u-20-24 pure-button" href="#">shell-list</a>
-                <button class="pure-u-2-24"><img src="static/img/set-up-o.png"></button>
-                <button class="pure-u-2-24"><img src="static/img/del.png"></button>
-            </div>
-        </div>
-        <div class="shell-info pure-u-3-4">
-            <div class="shell-info-tab pure-menu pure-menu-horizontal">
-                <a href="#" class="pure-menu-heading pure-menu-link">文件管理</a>
-                <ul class="pure-menu-list">
-                    <li class="pure-menu-item"><a href="#" class="pure-menu-link">终端</a></li>
-                    <li class="pure-menu-item"><a href="#" class="pure-menu-link">上传</a></li>
-                    <li class="pure-menu-item"><a href="#" class="pure-menu-link">下载</a></li>
-                </ul>
+    <div class="container">
+        <div class="row col-sm-12">
+            <ul id="myTab" class="nav nav-tabs">
+                <li class="active">
+                    <a href="#shell" data-toggle="tab">
+                        Shell
+                    </a>
+                </li>
+                <li><a href="#filemanager" data-toggle="tab">文件管理</a></li>
+                <li><a href="#vterm" data-toggle="tab">虚拟终端</a></li>
+            </ul>
+            <div id="myTabContent" class="tab-content">
+                <div class="tab-pane fade in active" id="shell">
+                    <table class="table table-striped col-sm-12">
+                        <thead>
+                            <tr>
+                            <th>地址</th>
+                            <th>类型</th>
+                            <th>插件</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="shellinfo in shelllist">
+                                <td class="hide">{{ shellinfo.id }}</td>
+                                <td>{{ shellinfo.url }}</td>
+                                <td>{{ shellinfo.method }}</td>
+                                <td>{{ shellinfo.plugin }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="filemanager">
+                    <p>文件管理</p>
+                </div>
+                <div class="tab-pane fade" id="vterm">
+                    <p>虚拟终端</p>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="footer">
 
-    </div>    
+    </div>
+    <script>
+        var shell = new Vue({
+            el: '#shell',
+            data: {
+                shelllist : ''
+            },
+            created: function() {
+                this.showshells();
+            },
+            methods: {
+                showshells: function () {
+                    var _self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: 'http://127.0.0.1:8080/showshells',
+                        success: function (data) {
+                            _self.shelllist = data["shelllist"];
+                        }
+                    });
+                }
+            }
+        })
+    </script>
 </body>
 </html>
