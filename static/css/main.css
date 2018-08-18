@@ -61,9 +61,13 @@ body,html {
     background: #d49999;
 }
 
+td button {
+    height: 27px;
+}
 
-img{
-	width: auto;
-	height: auto;
-	max-width: 100%;
-	max-height: 100%;	
+img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+}

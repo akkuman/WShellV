@@ -30,12 +30,60 @@
 
     <div class="container">
         <div class="row col-sm-12">
+            <!-- 按钮触发模态框  增加shell -->
+            <button class="btn btn-primary" data-toggle="modal" data-target="#shelladdpost">增加shell</button>
+            <!-- 模态框（Modal） 增加shell -->
+            <div class="modal fade" id="shelladdpost" tabindex="-1" role="dialog" aria-labelledby="shelladd" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                            <h4 class="modal-title">添加shell</h4>
+                        </div>
+                        <div class="modal-body">
+                            <form class="form-horizontal" role="form" action="/" method="post">
+                                <div class="form-group">
+                                    <label for="shelladdurl" class="col-sm-2 control-label">地址</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="shelladdurl" placeholder="" v-model="shelladdurl">
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <input type="text" class="form-control" id="shelladdpwd" placeholder="" v-model="shelladdpwd">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="addtypename" class="col-sm-2 control-label">脚本类型</label>
+                                    <div class="col-sm-10">
+                                        <select id="addtypename" class="form-control" v-model="addtypename">
+                                            <option>php</option>
+                                            <option>asp</option>
+                                            <option>jsp</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="addpluginname" class="col-sm-2 control-label">插件</label>
+                                    <div class="col-sm-10">
+                                        <select id="addpluginname" class="form-control" v-model="addpluginname">
+                                            <option>plain</option>
+                                            <option>aes</option>
+                                            <option>rc4</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                            <button @click="post_add_shell" type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal -->
+            </div>
+        </div>
+        <div class="row col-sm-12">
             <ul id="myTab" class="nav nav-tabs">
-                <li class="active">
-                    <a href="#shell" data-toggle="tab">
-                        Shell
-                    </a>
-                </li>
+                <li class="active"><a href="#shell" data-toggle="tab">Shell</a></li>
                 <li><a href="#filemanager" data-toggle="tab">文件管理</a></li>
                 <li><a href="#vterm" data-toggle="tab">虚拟终端</a></li>
             </ul>
@@ -44,17 +92,21 @@
                     <table class="table table-striped col-sm-12">
                         <thead>
                             <tr>
-                            <th>地址</th>
-                            <th>类型</th>
-                            <th>插件</th>
+                                <th>地址</th>
+                                <th>类型</th>
+                                <th>插件</th>
+                                <th>操作</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="shellinfo in shelllist">
+                            <tr v-for="(shellinfo, index) in shelllist">
                                 <td class="hide">{{ shellinfo.id }}</td>
                                 <td>{{ shellinfo.url }}</td>
                                 <td>{{ shellinfo.method }}</td>
                                 <td>{{ shellinfo.plugin }}</td>
+                                <td>
+                                     <button @click="delshell(index)" class="image-button bg-color-darken fg-color-white"><img src="/static/img/del.png"/></button>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -73,10 +125,10 @@
 
     </div>
     <script>
-        var shell = new Vue({
+        var shell_list = new Vue({
             el: '#shell',
             data: {
-                shelllist : ''
+                shelllist : []
             },
             created: function() {
                 this.showshells();
@@ -91,9 +143,50 @@
                             _self.shelllist = data["shelllist"];
                         }
                     });
+                },
+                delshell: function (index) {
+                    shellinfo = this.shelllist[index];
+                    var _self = this;
+                    $.ajax({
+                        type: 'POST',
+                        url: 'http://127.0.0.1:8080/delshell',
+                        data: {
+                            id: shellinfo.id
+                        },
+                        success: function (index) {
+                            _self.shelllist.splice(index, 1);
+                        }
+                    });
                 }
             }
-        })
+        });
+        var shell_add = new Vue({
+            el: '#shelladdpost',
+            data: {
+                shelladdurl: '',
+                shelladdpwd: '',
+                addtypename: '',
+                addpluginname: ''
+            },
+            methods: {
+                post_add_shell: function () {
+                    var _self = this;
+                    $.ajax({
+                        type: 'POST',
+                        url: 'http://127.0.0.1:8080/addshell',
+                        data: {
+                            url: _self.shelladdurl,
+                            pwd: _self.shelladdpwd,
+                            plugin: _self.addpluginname,
+                            method: _self.addtypename
+                        },
+                        success: function (data) {
+                            shell_list.showshells()
+                        }
+                    });
+                }
+            }
+        });
     </script>
 </body>
 </html>
