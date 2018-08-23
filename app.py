@@ -103,6 +103,27 @@ def showshells(db):
     allshell["shelllist"] = shell_list
     return allshell
 
+'''获取指定id的shell的文件列表
+POST /getflielist
+data = {
+    url=
+    pwd=
+    plugin=
+    method=
+}
+'''
+@app.route("/getfilelist", method="POST")
+def getfilelist():
+    url = bottle.request.forms.get('url')
+    pwd = bottle.request.forms.get('pwd')
+    plugin = bottle.request.forms.get('plugin')
+    method = bottle.request.forms.get('method')
+    shell = Shell(url, pwd, plugin, method)
+    info = {
+        'sysinfo': shell.get_sys_info(),
+        'filelist': shell.get_dir(),
+    }
+    return info
 
 
 @app.get("/")
@@ -113,7 +134,6 @@ def home():
 def static(path, filename):
     pathroot = './static/%s/' % path
     return  bottle.static_file(filename, root=pathroot)
-
 
 
 app.run(host="0.0.0.0",port=8080,debug=True)

@@ -84,7 +84,7 @@ class Shell:
         if resp.status_code == 200:
             match = self.datarule.search(resp.content.decode(self.coding))
             if match:
-                dir['dirs'] = [dict(zip(['name', 'mtime', 'size', 'perm'],i.split('\t'))) for i in match.group(1).split('\n')]
+                dir['dirs'] = [dict(zip(['name', 'mtime', 'size', 'perm'], i.split('\t'))) for i in match.group(1).strip().split('\n')]
                 return dir
         return resp.content.decode(self.coding)
 

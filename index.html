@@ -29,6 +29,8 @@
     </div>
 
     <div class="container">
+
+        <!--增加shell-->
         <div class="row col-sm-12">
             <!-- 按钮触发模态框  增加shell -->
             <button class="btn btn-primary" data-toggle="modal" data-target="#shelladdpost">增加shell</button>
@@ -81,13 +83,21 @@
                 </div><!-- /.modal -->
             </div>
         </div>
+
+
         <div class="row col-sm-12">
+
+            <!--标签页头-->
             <ul id="myTab" class="nav nav-tabs">
-                <li class="active"><a href="#shell" data-toggle="tab">Shell</a></li>
-                <li><a href="#filemanager" data-toggle="tab">文件管理</a></li>
-                <li><a href="#vterm" data-toggle="tab">虚拟终端</a></li>
+                <li class="active"><a id="tabshell" href="#shell" data-toggle="tab">Shell</a></li>
+                <li><a id="tabfmanager" href="#fmanager" data-toggle="tab">文件管理</a></li>
+                <li><a id="tabvterm" href="#vterm" data-toggle="tab">虚拟终端</a></li>
             </ul>
+
+            <!--标签页内容-->
             <div id="myTabContent" class="tab-content">
+
+                <!--shell列表标签页-->
                 <div class="tab-pane fade in active" id="shell">
                     <table class="table table-striped col-sm-12">
                         <thead>
@@ -105,15 +115,39 @@
                                 <td>{{ shellinfo.method }}</td>
                                 <td>{{ shellinfo.plugin }}</td>
                                 <td>
-                                     <button @click="delshell(index)" class="image-button bg-color-darken fg-color-white"><img src="/static/img/del.png"/></button>
+                                    <button @click="delshell(index)" class="image-button bg-color-darken fg-color-white"><img src="/static/img/del.png"/></button>
+                                    <button @click="show_fmanager(index)" class="image-button bg-color-darken fg-color-white"><img src="/static/img/file.png"/></button>
+                                    <button @click="show_vterm(index)" class="image-button bg-color-darken fg-color-white"><img src="/static/img/terminal.png"/></button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <div class="tab-pane fade" id="filemanager">
-                    <p>文件管理</p>
+
+                <!--文件管理标签页-->
+                <div class="tab-pane fade" id="fmanager">
+                    <input v-model="initFolder" class="col-sm-12" />
+                    <table class="table table-striped col-sm-12">
+                        <thead>
+                            <tr>
+                                <th>名称</th>
+                                <th>时间</th>
+                                <th>大小</th>
+                                <th>属性</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(fileinfo, index) in dirs">
+                                <td>{{ fileinfo.name }}</td>
+                                <td>{{ fileinfo.mtime }}</td>
+                                <td>{{ fileinfo.size | filter_format_file_size }}</td>
+                                <td>{{ fileinfo.perm }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
+
+                <!--虚拟终端标签页-->
                 <div class="tab-pane fade" id="vterm">
                     <p>虚拟终端</p>
                 </div>
@@ -125,10 +159,19 @@
 
     </div>
     <script>
+        Vue.filter('filter_format_file_size', function (value) {
+            if (value < 1024) {
+                return value + 'Byte';
+            } else if (value >= 1024) {
+                return (value/1024).toFixed(1) + 'kB';
+            } else {
+                return (value/1024/1024).toFixed(1) + 'MB';
+            }
+        })
         var shell_list = new Vue({
             el: '#shell',
             data: {
-                shelllist : []
+                shelllist : [],
             },
             created: function() {
                 this.showshells();
@@ -157,6 +200,26 @@
                             _self.shelllist.splice(index, 1);
                         }
                     });
+                },
+                show_fmanager: function (index) {
+                    shellinfo = this.shelllist[index];
+                    document.getElementById('tabfmanager').click();
+                    $.ajax({
+                        type: 'POST',
+                        url: 'http://127.0.0.1:8080/getfilelist',
+                        data: {
+                            url: shellinfo['url'],
+                            pwd: shellinfo['pwd'],
+                            plugin: shellinfo['plugin'],
+                            method: shellinfo['method'],
+                        },
+                        success: function (data) {
+                            file_manager.get_data(data);
+                        }
+                    });
+                },
+                show_vterm: function (index) {
+                    document.getElementById('tabvterm').click();
                 }
             }
         });
@@ -166,7 +229,7 @@
                 shelladdurl: '',
                 shelladdpwd: '',
                 addtypename: '',
-                addpluginname: ''
+                addpluginname: '',
             },
             methods: {
                 post_add_shell: function () {
@@ -184,6 +247,23 @@
                             shell_list.showshells()
                         }
                     });
+                }
+            }
+        });
+        var file_manager = new Vue({
+            el: '#fmanager',
+            data: {
+                initFolder: '',
+                drivers: [],
+                systemInfo: '',
+                dirs: [],
+            },
+            methods: {
+                get_data: function (data) {
+                    this.initFolder = data['sysinfo']['current_dir']
+                    this.drivers = data['sysinfo']['drivers']
+                    this.systemInfo = data['sysinfo']['system_info']
+                    this.dirs = data['filelist']['dirs']
                 }
             }
         });
