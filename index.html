@@ -132,6 +132,9 @@
                         <span class="input-group-btn">
                             <button @click="path_to_folder" class="btn btn-primary" type="button"> -> </button>
                         </span>
+                        <span class="input-group-btn">
+                            <button @click="upload_to_folder" class="btn btn-default" type="button">上传文件</button>
+                        </span>
                     </div>
                     <table class="table table-striped col-sm-12">
                         <thead>
@@ -264,6 +267,7 @@
                     this.dirs = data['filelist']['dirs'];
                 },
                 show_file_list: function(shellinfo, path='') {
+                // 展示指定shell的指定文件夹下的文件
                     this.shellinfo = shellinfo;
                     var _self = this;
                     $.ajax({
@@ -282,9 +286,11 @@
                     });
                 },
                 path_to_folder: function () {
+                // 根据路径显示文件夹下文件
                     this.show_file_list(this.shellinfo, this.folderPath);
                 },
                 click_to_folder: function (index) {
+                // 点击文件夹跳转到具体文件夹
                     var filename = this.dirs[index]['name'];
                     if (filename.indexOf('/') !== -1) {
                         if (filename === '../')
@@ -298,7 +304,10 @@
 
                         this.path_to_folder();
                     }
-                }
+                },
+                upload_to_folder: function () {
+                // 往指定文件夹上传文件
+                },
             }
         });
 
