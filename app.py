@@ -2,6 +2,8 @@
 
 import bottle
 import bottle.ext.sqlite
+import sqlite3
+import os
 from Shell import Shell
 
 app = bottle.Bottle()
@@ -128,14 +130,86 @@ def getfilelist():
     return info
 
 
+'''上传文件到指定id的shell指定文件夹下
+POST /uploadfile
+data = {
+    shellid=
+    file=
+    path=
+}
+'''
+@app.route("/uploadfile", method="POST")
+def uploadfile():
+    id = bottle.request.forms.get('shellid')
+    path = bottle.request.forms.get('path')
+    formfile = bottle.request.files.get('file')
+    formfile.save('./upload', overwrite=True)
+    shellinfo = get_shell_from_id(id)
+    shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'])
+    info =  shell.upload_file('./upload/%s'%formfile.filename, path)
+    os.remove('./upload/%s'%formfile.filename)
+    return info
+
+
+'''删除指定id的shell指定文件夹下的文件
+POST /delfile
+data = {
+    shellid=
+    filename=
+    path=
+}
+'''
+@app.route("/delfile", method="POST")
+def delfile():
+    id = bottle.request.forms.get('shellid')
+    filename = bottle.request.forms.get('filename')
+    path = bottle.request.forms.get('path')
+    shellinfo = get_shell_from_id(id)
+    shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'])
+    return shell.del_file(filename, path)
+
+
+'''在指定id的shell指定文件夹下创建新文件夹
+POST /createfolder
+data = {
+    shellid=
+    foldername=
+    path=
+}
+'''
+@app.route("/createfolder", method="POST")
+def createfolder():
+    id = bottle.request.forms.get('shellid')
+    foldername = bottle.request.forms.get('foldername')
+    path = bottle.request.forms.get('path')
+    shellinfo = get_shell_from_id(id)
+    shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'])
+    return shell.mkdir(foldername, path)
+
+
 @app.get("/")
 def home():
     return bottle.static_file('index.html',root='./')
+
 
 @app.get("/static/<path>/<filename>")
 def static(path, filename):
     pathroot = './static/%s/' % path
     return  bottle.static_file(filename, root=pathroot)
 
+
+def get_shell_from_id(id):
+    conn = sqlite3.connect('data.db')
+    c = conn.cursor()
+    cursor = c.execute('SELECT id, url, pwd, plugin, method FROM SHELL WHERE id=%s' % id)
+    row = cursor.fetchone()
+    shell_info = {}
+    shell_info["id"] = row[0]
+    shell_info["url"] = row[1]
+    shell_info["pwd"] = row[2]
+    shell_info["plugin"] = row[3]
+    shell_info["method"] = row[4]
+    conn.close()
+    return shell_info
 
 app.run(host="0.0.0.0",port=8080,debug=True)

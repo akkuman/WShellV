@@ -133,6 +133,7 @@
                             <button @click="path_to_folder" class="btn btn-primary" type="button"> -> </button>
                         </span>
                         <span class="input-group-btn">
+                            <input class="hide" id="fileinput" type="file" />
                             <button @click="upload_to_folder" class="btn btn-default" type="button">上传文件</button>
                         </span>
                     </div>
@@ -151,6 +152,10 @@
                                 <td>{{ fileinfo.mtime }}</td>
                                 <td>{{ fileinfo.size | filter_format_file_size }}</td>
                                 <td>{{ fileinfo.perm }}</td>
+                                <td>
+                                    <button @click="delfile(index)" class="image-button bg-color-darken fg-color-white"><img src="/static/img/del.png"/></button>
+                                </td>
+                                <!--createfolder新建文件夹待写-->
                             </tr>
                         </tbody>
                     </table>
@@ -307,7 +312,48 @@
                 },
                 upload_to_folder: function () {
                 // 往指定文件夹上传文件
+                    document.getElementById('fileinput').click();
+                    var _self = this;
+                    document.getElementById('fileinput').onchange = function () {
+                        var formData = new FormData();
+                        formData.append('file', $('#fileinput')[0].files[0]);
+                        formData.append('path', _self.folderPath);
+                        formData.append('shellid', _self.shellinfo['id']);
+                        $.ajax({
+                            url: '/uploadfile',
+                            type: 'POST',
+                            cache: false,
+                            data: formData,
+                            processData: false,
+                            contentType: false
+                        }).done(function(res) {
+                            alert('上传成功');
+                            _self.path_to_folder();
+                        }).fail(function(res) {
+                            alert('上传失败');
+                        });
+                    }
                 },
+                delfile: function (index) {
+                //删除文件
+                    var filename = this.dirs[index]['name'];
+                    var _self = this;
+                    $.ajax({
+                        url: '/delfile',
+                        type: 'POST',
+                        data: {
+                            shellid : _self.shellinfo['id'],
+                            filename: filename,
+                            path: _self.folderPath,
+                        },
+                        success: function () {
+                            _self.dirs.splice(index, 1);
+                        }
+                    })
+                },
+                createfolder: function (index) {
+
+                }
             }
         });
 
