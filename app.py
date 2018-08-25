@@ -187,6 +187,23 @@ def createfolder():
     return shell.mkdir(foldername, path)
 
 
+'''在指定id的shell指定文件夹下执行命令
+POST /createfolder
+data = {
+    shellid=
+    command=
+    path=
+}
+'''
+@app.route("/command", method="POST")
+def command():
+    id = bottle.request.forms.get('shellid')
+    cmd = bottle.request.forms.get('command')
+    path = bottle.request.forms.get('path')
+    shellinfo = get_shell_from_id(id)
+    shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'])
+    return shell.execute_command(cmd, path)
+
 @app.get("/")
 def home():
     return bottle.static_file('index.html',root='./')
