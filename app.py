@@ -146,7 +146,7 @@ def uploadfile():
     formfile.save('./upload', overwrite=True)
     shellinfo = get_shell_from_id(id)
     shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'])
-    info =  shell.upload_file('./upload/%s'%formfile.filename, path)
+    info = shell.upload_file('./upload/%s'%formfile.filename, path)
     os.remove('./upload/%s'%formfile.filename)
     return info
 
