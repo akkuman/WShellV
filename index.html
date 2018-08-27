@@ -69,11 +69,7 @@
                                     <label for="addpluginname" class="col-sm-2 control-label">插件</label>
                                     <div class="col-sm-10">
                                         <select id="addpluginname" class="form-control" v-model="addpluginname">
-                                            <option>plain</option>
-                                            <!--
-                                            <option>aes</option>
-                                            <option>rc4</option>
-                                            -->
+                                            <option v-for="(plugin, index) in plugins">{{ plugin }}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -249,6 +245,10 @@
                 shelladdpwd: '',
                 addtypename: '',
                 addpluginname: '',
+                plugins: [],
+            },
+            created: function() {
+                this.get_plugin_list();
             },
             methods: {
                 post_add_shell: function () {
@@ -263,7 +263,17 @@
                             method: _self.addtypename
                         },
                         success: function (data) {
-                            shell_list.showshells()
+                            shell_list.showshells();
+                        }
+                    });
+                },
+                get_plugin_list: function () {
+                    var _self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: '/getpluginlist',
+                        success: function (data) {
+                            _self.plugins = data['plugins'];
                         }
                     });
                 }

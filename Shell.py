@@ -49,7 +49,7 @@ class Shell:
             with open(filename, 'rb') as f:
                 content = f.read()
             data += '&z1=%s' % bytes.decode(binascii.hexlify(content)).upper()
-        data = '%s=%s' % (self.pwd, self.plugin_module.encrypt(data))
+        data = '%s=%s' % (self.pwd, self.plugin_module.encrypt(data, self.pwd))
         return data
 
     def basic_set(self):

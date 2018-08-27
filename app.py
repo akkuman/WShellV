@@ -204,6 +204,15 @@ def command():
     shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'])
     return shell.execute_command(cmd, path)
 
+
+'''获取插件列表
+GET /getpluginlist
+'''
+@app.route("/getpluginlist")
+def getpluginlist():
+    plugin_list = [os.path.splitext(i)[0] for i in os.listdir('./plugins') if i != '__init__.py']
+    return {'plugins': plugin_list}
+
 @app.get("/")
 def home():
     return bottle.static_file('index.html',root='./')
