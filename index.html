@@ -73,6 +73,14 @@
                                         </select>
                                     </div>
                                 </div>
+                                <div class="form-group">
+                                    <label for="addcodingname" class="col-sm-2 control-label">编码</label>
+                                    <div class="col-sm-10">
+                                        <select id="addcodingname" class="form-control" v-model="addcodingname">
+                                            <option v-for="(coding, index) in codings">{{ coding }}</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </form>
                         </div>
                         <div class="modal-footer">
@@ -105,6 +113,7 @@
                                 <th>地址</th>
                                 <th>类型</th>
                                 <th>插件</th>
+                                <th>编码</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
@@ -114,6 +123,7 @@
                                 <td>{{ shellinfo.url }}</td>
                                 <td>{{ shellinfo.method }}</td>
                                 <td>{{ shellinfo.plugin }}</td>
+                                <td>{{ shellinfo.coding }}</td>
                                 <td>
                                     <button @click="delshell(index)" class="image-button bg-color-darken fg-color-white"><img src="/static/img/del.png"/></button>
                                     <button @click="show_fmanager(index)" class="image-button bg-color-darken fg-color-white"><img src="/static/img/file.png"/></button>
@@ -245,10 +255,13 @@
                 shelladdpwd: '',
                 addtypename: '',
                 addpluginname: '',
+                addcodingname: '',
                 plugins: [],
+                codings: [],
             },
             created: function() {
                 this.get_plugin_list();
+                this.get_coding_list();
             },
             methods: {
                 post_add_shell: function () {
@@ -260,7 +273,8 @@
                             url: _self.shelladdurl,
                             pwd: _self.shelladdpwd,
                             plugin: _self.addpluginname,
-                            method: _self.addtypename
+                            method: _self.addtypename,
+                            coding: _self.addcodingname,
                         },
                         success: function (data) {
                             shell_list.showshells();
@@ -268,12 +282,24 @@
                     });
                 },
                 get_plugin_list: function () {
+                // 获取插件列表
                     var _self = this;
                     $.ajax({
                         type: 'GET',
                         url: '/getpluginlist',
                         success: function (data) {
                             _self.plugins = data['plugins'];
+                        }
+                    });
+                },
+                get_coding_list: function () {
+                // 获取支持编码列表
+                    var _self = this;
+                    $.ajax({
+                        type: 'GET',
+                        url: '/getcodinglist',
+                        success: function (data) {
+                            _self.codings = data['coding'];
                         }
                     });
                 }

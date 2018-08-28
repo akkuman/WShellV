@@ -4,6 +4,7 @@ import bottle
 import bottle.ext.sqlite
 import sqlite3
 import os
+import config
 from Shell import Shell
 
 app = bottle.Bottle()
@@ -18,6 +19,7 @@ data = {
     pwd=
     plugin=
     method=
+    coding=
 }
 '''
 @app.route("/addshell", method='POST')
@@ -26,7 +28,8 @@ def addshell(db):
     pwd = bottle.request.forms.pwd
     plugin = bottle.request.forms.plugin
     method = bottle.request.forms.method
-    sql = 'INSERT INTO shell (url, pwd, plugin, method) VALUES ("%s", "%s", "%s", "%s");' % (url, pwd, plugin, method)
+    coding = bottle.request.forms.coding
+    sql = 'INSERT INTO shell (url, pwd, plugin, method, coding) VALUES ("%s", "%s", "%s", "%s", "%s");' % (url, pwd, plugin, method, coding)
     db.execute(sql)
 
 
@@ -51,6 +54,7 @@ data = {
     pwd =
     plugin =
     method =
+    coding =
 }
 '''
 @app.route("/updateshell", method='POST')
@@ -60,7 +64,8 @@ def updateshell(db):
     pwd = bottle.request.forms.pwd
     plugin = bottle.request.forms.plugin
     method = bottle.request.forms.method
-    sql = 'UPDATE SHELL SET url = "%s", pwd = "%s", plugin = "%s", method = "%s" WHERE id=%s;' % (url, pwd, plugin, method, id)
+    coding = bottle.request.forms.coding
+    sql = 'UPDATE SHELL SET url = "%s", pwd = "%s", plugin = "%s", method = "%s", coding = "%s" WHERE id=%s;' % (url, pwd, plugin, method, coding, id)
     db.execute(sql)
 
 
@@ -73,7 +78,7 @@ data = {
 @app.route("/selectshell", method='POST')
 def selectshell(db):
     id = bottle.request.forms.id
-    sql = 'SELECT id, url, pwd, plugin, method FROM SHELL WHERE id=%s' % id
+    sql = 'SELECT id, url, pwd, plugin, method, coding FROM SHELL WHERE id=%s' % id
     row = db.execute(sql)
     shell_info = {}
     shell_info["id"] = row[0]
@@ -81,6 +86,7 @@ def selectshell(db):
     shell_info["pwd"] = row[2]
     shell_info["plugin"] = row[3]
     shell_info["method"] = row[4]
+    shell_info["coding"] = row[5]
     return shell_info
 
 
@@ -89,7 +95,7 @@ GET /showshells
 '''
 @app.route("/showshells")
 def showshells(db):
-    sql = "SELECT id, url, pwd, plugin, method FROM SHELL;"
+    sql = "SELECT id, url, pwd, plugin, method, coding FROM SHELL;"
     rows = db.execute(sql)
     shell_list = []
     for row in rows:
@@ -99,6 +105,7 @@ def showshells(db):
         shell_info["pwd"] = row[2]
         shell_info["plugin"] = row[3]
         shell_info["method"] = row[4]
+        shell_info["coding"] = row[5]
         shell_list.append(shell_info)
     print(shell_list)
     allshell = {}
@@ -108,10 +115,7 @@ def showshells(db):
 '''获取指定id的shell的文件列表
 POST /getflielist
 data = {
-    url=
-    pwd=
-    plugin=
-    method=
+    shellid=
     path=
 }
 '''
@@ -120,7 +124,7 @@ def getfilelist():
     shellid = bottle.request.forms.shellid
     path = bottle.request.forms.path
     shellinfo = get_shell_from_id(shellid)
-    shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'])
+    shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'], shellinfo['coding'])
     info = {
         'sysinfo': shell.get_sys_info(),
         'filelist': shell.get_dir(path),
@@ -143,7 +147,7 @@ def uploadfile():
     formfile = bottle.request.files.file
     formfile.save('./upload', overwrite=True)
     shellinfo = get_shell_from_id(id)
-    shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'])
+    shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'], shellinfo['coding'])
     info = shell.upload_file('./upload/%s'%formfile.filename, path)
     os.remove('./upload/%s'%formfile.filename)
     return info
@@ -163,7 +167,7 @@ def delfile():
     filename = bottle.request.forms.filename
     path = bottle.request.forms.path
     shellinfo = get_shell_from_id(id)
-    shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'])
+    shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'], shellinfo['coding'])
     return shell.del_file(filename, path)
 
 
@@ -181,7 +185,7 @@ def createfolder():
     foldername = bottle.request.forms.foldername
     path = bottle.request.forms.path
     shellinfo = get_shell_from_id(id)
-    shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'])
+    shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'], shellinfo['coding'])
     return shell.mkdir(foldername, path)
 
 
@@ -199,7 +203,7 @@ def command():
     cmd = bottle.request.forms.command
     path = bottle.request.forms.path
     shellinfo = get_shell_from_id(id)
-    shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'])
+    shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'], shellinfo['coding'])
     return shell.execute_command(cmd, path)
 
 
@@ -211,9 +215,17 @@ def getpluginlist():
     plugin_list = [os.path.splitext(i)[0] for i in os.listdir('./plugins') if i != '__init__.py']
     return {'plugins': plugin_list}
 
+'''获取支持编码列表
+GET /getcodinglist
+'''
+@app.route("/getcodinglist")
+def getcodinglist():
+    return config.coding
+
+
 @app.get("/")
 def home():
-    return bottle.static_file('index.html',root='./')
+    return bottle.static_file('index.html', root='./')
 
 
 @app.get("/static/<path>/<filename>")
@@ -225,7 +237,7 @@ def static(path, filename):
 def get_shell_from_id(id):
     conn = sqlite3.connect('data.db')
     c = conn.cursor()
-    cursor = c.execute('SELECT id, url, pwd, plugin, method FROM SHELL WHERE id=%s' % id)
+    cursor = c.execute('SELECT id, url, pwd, plugin, method, coding FROM SHELL WHERE id=%s' % id)
     row = cursor.fetchone()
     shell_info = {}
     shell_info["id"] = row[0]
@@ -233,6 +245,7 @@ def get_shell_from_id(id):
     shell_info["pwd"] = row[2]
     shell_info["plugin"] = row[3]
     shell_info["method"] = row[4]
+    shell_info["coding"] = row[5]
     conn.close()
     return shell_info
 
