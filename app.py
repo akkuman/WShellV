@@ -22,10 +22,10 @@ data = {
 '''
 @app.route("/addshell", method='POST')
 def addshell(db):
-    url = bottle.request.forms.get('url')
-    pwd = bottle.request.forms.get('pwd')
-    plugin = bottle.request.forms.get('plugin')
-    method = bottle.request.forms.get('method')
+    url = bottle.request.forms.url
+    pwd = bottle.request.forms.pwd
+    plugin = bottle.request.forms.plugin
+    method = bottle.request.forms.method
     sql = 'INSERT INTO shell (url, pwd, plugin, method) VALUES ("%s", "%s", "%s", "%s");' % (url, pwd, plugin, method)
     db.execute(sql)
 
@@ -38,7 +38,7 @@ data = {
 '''
 @app.route("/delshell", method='POST')
 def delshell(db):
-    id = bottle.request.forms.get('id')
+    id = bottle.request.forms.id
     sql = "DELETE from SHELL where id=%s;" % id
     db.execute(sql)
 
@@ -55,11 +55,11 @@ data = {
 '''
 @app.route("/updateshell", method='POST')
 def updateshell(db):
-    id = bottle.request.forms.get('id')
-    url = bottle.request.forms.get('url')
-    pwd = bottle.request.forms.get('pwd')
-    plugin = bottle.request.forms.get('plugin')
-    method = bottle.request.forms.get('method')
+    id = bottle.request.forms.id
+    url = bottle.request.forms.url
+    pwd = bottle.request.forms.pwd
+    plugin = bottle.request.forms.plugin
+    method = bottle.request.forms.method
     sql = 'UPDATE SHELL SET url = "%s", pwd = "%s", plugin = "%s", method = "%s" WHERE id=%s;' % (url, pwd, plugin, method, id)
     db.execute(sql)
 
@@ -72,7 +72,7 @@ data = {
 '''
 @app.route("/selectshell", method='POST')
 def selectshell(db):
-    id = bottle.request.forms.get('id')
+    id = bottle.request.forms.id
     sql = 'SELECT id, url, pwd, plugin, method FROM SHELL WHERE id=%s' % id
     row = db.execute(sql)
     shell_info = {}
@@ -117,11 +117,11 @@ data = {
 '''
 @app.route("/getfilelist", method="POST")
 def getfilelist():
-    url = bottle.request.forms.get('url')
-    pwd = bottle.request.forms.get('pwd')
-    plugin = bottle.request.forms.get('plugin')
-    method = bottle.request.forms.get('method')
-    path = bottle.request.forms.get('path')
+    url = bottle.request.forms.url
+    pwd = bottle.request.forms.pwd
+    plugin = bottle.request.forms.plugin
+    method = bottle.request.forms.method
+    path = bottle.request.forms.path
     shell = Shell(url, pwd, plugin, method)
     info = {
         'sysinfo': shell.get_sys_info(),
@@ -140,9 +140,9 @@ data = {
 '''
 @app.route("/uploadfile", method="POST")
 def uploadfile():
-    id = bottle.request.forms.get('shellid')
-    path = bottle.request.forms.get('path')
-    formfile = bottle.request.files.get('file')
+    id = bottle.request.forms.shellid
+    path = bottle.request.forms.path
+    formfile = bottle.request.files.file
     formfile.save('./upload', overwrite=True)
     shellinfo = get_shell_from_id(id)
     shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'])
@@ -161,9 +161,9 @@ data = {
 '''
 @app.route("/delfile", method="POST")
 def delfile():
-    id = bottle.request.forms.get('shellid')
-    filename = bottle.request.forms.get('filename')
-    path = bottle.request.forms.get('path')
+    id = bottle.request.forms.shellid
+    filename = bottle.request.forms.filename
+    path = bottle.request.forms.path
     shellinfo = get_shell_from_id(id)
     shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'])
     return shell.del_file(filename, path)
@@ -179,9 +179,9 @@ data = {
 '''
 @app.route("/createfolder", method="POST")
 def createfolder():
-    id = bottle.request.forms.get('shellid')
-    foldername = bottle.request.forms.get('foldername')
-    path = bottle.request.forms.get('path')
+    id = bottle.request.forms.shellid
+    foldername = bottle.request.forms.foldername
+    path = bottle.request.forms.path
     shellinfo = get_shell_from_id(id)
     shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'])
     return shell.mkdir(foldername, path)
@@ -197,9 +197,9 @@ data = {
 '''
 @app.route("/command", method="POST")
 def command():
-    id = bottle.request.forms.get('shellid')
-    cmd = bottle.request.forms.get('command')
-    path = bottle.request.forms.get('path')
+    id = bottle.request.forms.shellid
+    cmd = bottle.request.forms.command
+    path = bottle.request.forms.path
     shellinfo = get_shell_from_id(id)
     shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'])
     return shell.execute_command(cmd, path)
