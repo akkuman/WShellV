@@ -348,6 +348,7 @@
                         $.ajax({
                             url: '/uploadfile',
                             type: 'POST',
+                            contentType: "application/x-www-form-urlencoded; charset=utf-8",
                             cache: false,
                             data: formData,
                             processData: false,
