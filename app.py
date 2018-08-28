@@ -117,12 +117,10 @@ data = {
 '''
 @app.route("/getfilelist", method="POST")
 def getfilelist():
-    url = bottle.request.forms.url
-    pwd = bottle.request.forms.pwd
-    plugin = bottle.request.forms.plugin
-    method = bottle.request.forms.method
+    shellid = bottle.request.forms.shellid
     path = bottle.request.forms.path
-    shell = Shell(url, pwd, plugin, method)
+    shellinfo = get_shell_from_id(shellid)
+    shell = Shell(shellinfo['url'], shellinfo['pwd'], shellinfo['plugin'], shellinfo['method'])
     info = {
         'sysinfo': shell.get_sys_info(),
         'filelist': shell.get_dir(path),

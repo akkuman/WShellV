@@ -305,10 +305,7 @@
                         url: '/getfilelist',
                         contentType: "application/x-www-form-urlencoded; charset=utf-8",
                         data: {
-                            url: shellinfo['url'],
-                            pwd: shellinfo['pwd'],
-                            plugin: shellinfo['plugin'],
-                            method: shellinfo['method'],
+                            shellid: shellinfo['id'],
                             path: path.replace(/\\/g,'\\\\'),
                         },
                         success: function (data) {
